@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: flowdesk-postgres
+    environment:
+      POSTGRES_DB: flowdesk
+      POSTGRES_USER: flowdesk_user
+      POSTGRES_PASSWORD: flowdesk_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - flowdesk_pgdata:/var/lib/postgresql/data
+
+volumes:
+  flowdesk_pgdata:
