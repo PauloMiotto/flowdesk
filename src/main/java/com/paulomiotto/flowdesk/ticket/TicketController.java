@@ -1,8 +1,9 @@
 package com.paulomiotto.flowdesk.ticket;
 
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/tickets")
@@ -14,13 +15,18 @@ public class TicketController {
         this.repository = repository;
     }
 
-    @PostMapping
-    public Ticket create(@RequestParam String title,
-                         @RequestParam String description) {
 
-        Ticket ticket = new Ticket(title, description);
+    @PostMapping
+    public Ticket create(@Valid @RequestBody CreateTicketRequest request) {
+
+        Ticket ticket = new Ticket(
+                request.getTitle(),
+                request.getDescription()
+        );
+
         return repository.save(ticket);
     }
+
 
     @GetMapping
     public List<Ticket> list() {
