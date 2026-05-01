@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 @RestController
 @RequestMapping("/tickets")
@@ -31,5 +33,12 @@ public class TicketController {
     @GetMapping
     public List<Ticket> list() {
         return repository.findAll();
+    }
+
+
+    @GetMapping("/{id}")
+    public Ticket findById(@PathVariable Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new TicketNotFoundException(id));
     }
 }
