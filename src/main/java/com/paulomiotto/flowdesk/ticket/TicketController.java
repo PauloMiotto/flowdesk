@@ -1,11 +1,9 @@
 package com.paulomiotto.flowdesk.ticket;
 
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 @RestController
 @RequestMapping("/tickets")
@@ -17,41 +15,62 @@ public class TicketController {
         this.repository = repository;
     }
 
-
     @PostMapping
-    public Ticket create(@Valid @RequestBody CreateTicketRequest request) {
-
+    public TicketResponse create(@Valid @RequestBody CreateTicketRequest request) {
         Ticket ticket = new Ticket(
                 request.getTitle(),
                 request.getDescription()
         );
 
-        return repository.save(ticket);
+        return toResponse(repository.save(ticket));
     }
 
-
+    /*
     @GetMapping
-    public List<Ticket> list() {
-        return repository.findAll();
-    }
+    public List<TicketResponse> findAll() {
+        return repository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }*/
+    @GetMapping
+    public List<TicketResponse> findAll(@RequestParam(defaultValue = "0") int page, //Paginação
+                                        @RequestParam(defaultValue = "5") int size) {
 
+        return repository.findAll(
+                        org.springframework.data.domain.PageRequest.of(page, size)
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
     @GetMapping("/{id}")
-    public Ticket findById(@PathVariable Long id) {
-        return repository.findById(id)
+    public TicketResponse findById(@PathVariable Long id) {
+        Ticket ticket = repository.findById(id)
                 .orElseThrow(() -> new TicketNotFoundException(id));
+
+        return toResponse(ticket);
     }
 
-
     @PatchMapping("/{id}/status")
-    public Ticket updateStatus(@PathVariable Long id,
-                               @RequestParam TicketStatus status) {
-
+    public TicketResponse updateStatus(@PathVariable Long id,
+                                       @RequestParam TicketStatus status) {
         Ticket ticket = repository.findById(id)
                 .orElseThrow(() -> new TicketNotFoundException(id));
 
         ticket.setStatus(status);
 
-        return repository.save(ticket);
+        return toResponse(repository.save(ticket));
+    }
+
+    private TicketResponse toResponse(Ticket ticket) {
+        return new TicketResponse(
+                ticket.getId(),
+                ticket.getTitle(),
+                ticket.getDescription(),
+                ticket.getStatus(),
+                ticket.getCreatedAt()
+        );
     }
 }
