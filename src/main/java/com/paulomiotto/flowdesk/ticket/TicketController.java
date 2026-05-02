@@ -41,4 +41,17 @@ public class TicketController {
         return repository.findById(id)
                 .orElseThrow(() -> new TicketNotFoundException(id));
     }
+
+
+    @PatchMapping("/{id}/status")
+    public Ticket updateStatus(@PathVariable Long id,
+                               @RequestParam TicketStatus status) {
+
+        Ticket ticket = repository.findById(id)
+                .orElseThrow(() -> new TicketNotFoundException(id));
+
+        ticket.setStatus(status);
+
+        return repository.save(ticket);
+    }
 }

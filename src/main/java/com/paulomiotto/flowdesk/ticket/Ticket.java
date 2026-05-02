@@ -16,9 +16,10 @@ public class Ticket {
 
     private String description;
 
-    private String status;
+    //private String status;
+    @Enumerated(EnumType.STRING)
+    private TicketStatus status;
 
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     protected Ticket() {
@@ -27,7 +28,8 @@ public class Ticket {
     public Ticket(String title, String description) {
         this.title = title;
         this.description = description;
-        this.status = "OPEN";
+        //this.status = "OPEN";
+        this.status = TicketStatus.OPEN;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -43,8 +45,12 @@ public class Ticket {
         return description;
     }
 
-    public String getStatus() {
+    public TicketStatus getStatus() {
         return status;
+    }
+
+    public void setStatus(TicketStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {
