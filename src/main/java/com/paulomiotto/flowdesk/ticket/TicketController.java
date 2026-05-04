@@ -9,37 +9,26 @@ import java.util.List;
 @RequestMapping("/tickets")
 public class TicketController {
 
-    private final TicketRepository repository;
+    private final TicketService service;
 
-    public TicketController(TicketRepository repository) {
-        this.repository = repository;
+    public TicketController(TicketService service) {
+        this.service = service;
     }
 
     @PostMapping
     public TicketResponse create(@Valid @RequestBody CreateTicketRequest request) {
-        Ticket ticket = new Ticket(
+        Ticket ticket = service.create(
                 request.getTitle(),
                 request.getDescription()
         );
 
-        return toResponse(repository.save(ticket));
+        return toResponse(ticket);
     }
 
-    /*
     @GetMapping
-    public List<TicketResponse> findAll() {
-        return repository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }*/
-    @GetMapping
-    public List<TicketResponse> findAll(@RequestParam(defaultValue = "0") int page, //Paginação
+    public List<TicketResponse> findAll(@RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "5") int size) {
-
-        return repository.findAll(
-                        org.springframework.data.domain.PageRequest.of(page, size)
-                )
+        return service.findAll(page, size)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -47,21 +36,13 @@ public class TicketController {
 
     @GetMapping("/{id}")
     public TicketResponse findById(@PathVariable Long id) {
-        Ticket ticket = repository.findById(id)
-                .orElseThrow(() -> new TicketNotFoundException(id));
-
-        return toResponse(ticket);
+        return toResponse(service.findById(id));
     }
 
     @PatchMapping("/{id}/status")
     public TicketResponse updateStatus(@PathVariable Long id,
                                        @RequestParam TicketStatus status) {
-        Ticket ticket = repository.findById(id)
-                .orElseThrow(() -> new TicketNotFoundException(id));
-
-        ticket.setStatus(status);
-
-        return toResponse(repository.save(ticket));
+        return toResponse(service.updateStatus(id, status));
     }
 
     private TicketResponse toResponse(Ticket ticket) {
