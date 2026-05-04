@@ -1,18 +1,19 @@
 package com.paulomiotto.flowdesk.ticket;
 
+import com.paulomiotto.flowdesk.common.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/tickets")
 public class TicketController {
 
     private final TicketService service;
+    private final TicketMapper mapper;
 
-    public TicketController(TicketService service) {
+    public TicketController(TicketService service, TicketMapper mapper) {
         this.service = service;
+        this.mapper = mapper;
     }
 
     @PostMapping
@@ -22,36 +23,39 @@ public class TicketController {
                 request.getDescription()
         );
 
-        return toResponse(ticket);
+        return mapper.toResponse(ticket);
     }
 
     @GetMapping
-    public List<TicketResponse> findAll(@RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "5") int size) {
-        return service.findAll(page, size)
+    public PageResponse<TicketResponse> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        var ticketPage = service.findAll(page, size);
+
+        var content = ticketPage.getContent()
                 .stream()
-                .map(this::toResponse)
+                .map(mapper::toResponse)
                 .toList();
+
+        return new PageResponse<>(
+                content,
+                ticketPage.getNumber(),
+                ticketPage.getSize(),
+                ticketPage.getTotalElements(),
+                ticketPage.getTotalPages()
+        );
     }
 
     @GetMapping("/{id}")
     public TicketResponse findById(@PathVariable Long id) {
-        return toResponse(service.findById(id));
+        return mapper.toResponse(service.findById(id));
     }
 
     @PatchMapping("/{id}/status")
     public TicketResponse updateStatus(@PathVariable Long id,
                                        @RequestParam TicketStatus status) {
-        return toResponse(service.updateStatus(id, status));
-    }
-
-    private TicketResponse toResponse(Ticket ticket) {
-        return new TicketResponse(
-                ticket.getId(),
-                ticket.getTitle(),
-                ticket.getDescription(),
-                ticket.getStatus(),
-                ticket.getCreatedAt()
-        );
+        return mapper.toResponse(service.updateStatus(id, status));
     }
 }
+
